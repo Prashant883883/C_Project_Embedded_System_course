@@ -14,12 +14,12 @@ int main() {
     for (int i=0; i < days.size(); i++) {
         std::cout << days[i] << "=" << temperature[i] << "°C - Weather is";
 
-        if (temperature[i]<9)
-            std::cout << "COLD";
+        if (temperature[i]<10)
+            std::cout << " COLD";
         else if (temperature[i]<=20)
-            std::cout <<"MODERATE SUNNY";
+            std::cout <<" OK";
         else
-            std::cout <<"WARM"; 
+            std::cout <<" WARM"; 
         
         std::cout << endl;
     }
