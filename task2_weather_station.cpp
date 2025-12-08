@@ -3,112 +3,114 @@
 #include <algorithm>
 #include <stdexcept>
 #include <sstream>
+
 using namespace std;
 
-// ==========================
-// TEMPLATE FOR AVERAGE
-// ==========================
-template<typename T>
-T computeAverage(const T* arr, int size) {
+// template that is used for the  average calculation
+template <class T>
+T getAverage(T* arr, int size) 
+{
     if (size == 0) {
-        throw runtime_error("Error: No readings available. Cannot calculate average.");
+        throw runtime_error("Can't calculate average with no readings");
     }
-    
+
     T sum = 0;
-    for (int i = 0; i < size; i++) {
+    for(int i = 0; i < size; i++){
         sum += arr[i];
     }
     return sum / size;
 }
 
-// ==========================
-// WEATHER STATION CLASS
-// ==========================
-class WeatherStation {
+class WeatherStation
+{
 private:
     string location;
-    float* readings;  // dynamic memory
-    int count;        // how many readings added
-    int capacity;     // max number of readings
+    float* data;    //This means the dynamic mmemory
+    int count;
+    int capacity;
 
 public:
 
-    // Constructor
     WeatherStation(string loc, int cap = 50)
-        : location(loc), count(0), capacity(cap)
     {
-        readings = new float[capacity];
+        location = loc;
+        capacity = cap;
+        count = 0;
+        data = new float[capacity];
     }
 
-    // Copy constructor (needed for reconstruction)
-    WeatherStation(const WeatherStation& other) {
+    // this is a copy constructor that is needed for loading from a file 
+    WeatherStation(const WeatherStation &other)
+    {
         location = other.location;
-        count = other.count;
         capacity = other.capacity;
+        count = other.count;
 
-        readings = new float[capacity];
-        for (int i = 0; i < count; i++) {
-            readings[i] = other.readings[i];
+        data = new float[capacity];
+        for(int i = 0; i < count; i++){
+            data[i] = other.data[i];
         }
     }
 
-    // Destructor
-    ~WeatherStation() {
-        delete[] readings;
+    ~WeatherStation()
+    {
+        delete[] data;
     }
 
-    // Add a reading
-    void addReading(float value) {
-        if (count >= capacity) {
-            throw runtime_error("Error: Capacity reached.");
+    void addReading(float v)
+    {
+        if (count >= capacity){
+            throw runtime_error("No space for more readings");
         }
-        readings[count++] = value;
+        data[count] = v;
+        count++;
     }
 
-    // Print readings
-    void printReadings() const {
+    void printReadings() const
+    {
         cout << "Readings: ";
-        for (int i = 0; i < count; i++) {
-            cout << readings[i] << " ";
+        for (int i = 0; i < count; i++){
+            cout << data[i] << " ";
         }
         cout << endl;
     }
 
-    // Sort the readings
-    void sortReadings() {
-        sort(readings, readings + count);
+    void sortReadings()
+    {
+        sort(data, data + count);
     }
 
-    // Count readings above threshold
-    int countAbove(float threshold) const {
-        return count_if(readings, readings + count,
-                        [threshold](float r) { return r > threshold; });
+    int countAbove(float t) const
+    {
+        return count_if(data, data + count, [t](float r){
+            return r > t;
+        });
     }
 
-    // Save to file
-    void saveToFile(const string& filename) {
+    void saveToFile(string filename)
+    {
         ofstream file(filename);
 
-        if (!file.is_open()) {
-            throw runtime_error("Error: Could not open file for writing.");
+        if (!file.is_open()){
+            throw runtime_error("Could not open file");
         }
 
-        file << location << endl;
+        file << location << "\n";
 
-        for (int i = 0; i < count; i++) {
-            file << readings[i] << " ";
+        for(int i = 0; i < count; i++){
+            file << data[i] << " ";
         }
-        file << endl;
+        file << "\n";
 
         file.close();
     }
 
-    // Recreate WeatherStation from file
-    static WeatherStation loadFromFile(const string& filename) {
+    static WeatherStation loadFromFile(string filename)
+    {
         ifstream file(filename);
 
-        if (!file.is_open()) {
-            throw runtime_error("Error: Cannot open file for reading.");
+        if (!file.is_open()){
+            throw runtime_error("Failed to read file");
         }
 
         string loc;
@@ -117,60 +119,60 @@ public:
         WeatherStation ws(loc);
 
         string line;
-        if (getline(file, line)) {
-            stringstream ss(line);
-            float value;
-            while (ss >> value) {
-                ws.addReading(value);
-            }
+        getline(file, line);
+
+        stringstream ss(line);
+        float temp;
+
+        while (ss >> temp) {
+            ws.addReading(temp);
         }
 
-        file.close();
         return ws;
     }
 
-    string getLocation() const { return location; }
+    float calculateAverage()
+    {
+        return getAverage(data, count);
+    }
 
-    float getAverage() {
-        return computeAverage(readings, count);
+    string getLocation() const
+    {
+        return location;
     }
 };
 
-// ==========================
-// MAIN FUNCTION
-// ==========================
-int main() {
+int main()
+{
     try {
-        WeatherStation ws("Lahti");
+        WeatherStation station("Lahti");
 
-        // Add manually the readings required in assignment
-        ws.addReading(22.5);
-        ws.addReading(24.0);
-        ws.addReading(26.3);
-        ws.addReading(21.8);
-        ws.addReading(25.7);
+        station.addReading(22.5);
+        station.addReading(24.0);
+        station.addReading(26.3);
+        station.addReading(21.8);
+        station.addReading(25.7);
 
-        // Sorting
-        ws.sortReadings();
+        station.sortReadings();
 
-        cout << "Location: " << ws.getLocation() << endl;
-        ws.printReadings();
+        cout << "Location: " << station.getLocation() << endl;
+        station.printReadings();
 
-        float avg = ws.getAverage();
+        float avg = station.calculateAverage();
         cout << "Average: " << avg << endl;
 
-        int above25 = ws.countAbove(25.0);
-        cout << "Readings above 25°C: " << above25 << endl;
+        int above = station.countAbove(25.0f);
+        cout << "Readings above 25°C: " << above << endl;
 
-        string filename = "lahti_readings.txt";
-        ws.saveToFile(filename);
+        string file = "lahti_readings.txt";
+        station.saveToFile(file);
 
-        cout << "Saved to file: " << filename << endl;
+        cout << "Saved to file: " << file << endl;
 
-        // (Optional) load back
-        WeatherStation loaded = WeatherStation::loadFromFile(filename);
+        // Loading back
+        WeatherStation w2 = WeatherStation::loadFromFile(file);
 
-    } catch (exception& e) {
+    } catch (exception &e) {
         cout << e.what() << endl;
     }
 
