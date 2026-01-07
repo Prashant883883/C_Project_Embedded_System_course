@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "author": "Prashant Bhandari",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "wokwi-pi-pico",
+      "id": "pico",
+      "top": -89.55,
+      "left": 61.2,
+      "attrs": { "builder": "pico-sdk" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led1",
+      "top": 130.8,
+      "left": 109.4,
+      "rotate": 180,
+      "attrs": { "color": "red" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": 147.95,
+      "left": 19.2,
+      "attrs": { "value": "1000" }
+    }
+  ],
+  "connections": [
+    [ "pico:GP0", "$serialMonitor:RX", "", [] ],
+    [ "pico:GP1", "$serialMonitor:TX", "", [] ],
+    [ "pico:GP15", "r1:1", "green", [ "h-48", "v48" ] ],
+    [ "r1:2", "led1:A", "green", [ "v0" ] ],
+    [ "pico:GND.6", "led1:C", "black", [ "h39.6", "v105.6" ] ]
+  ],
+  "dependencies": {}
+}
